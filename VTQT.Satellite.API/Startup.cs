@@ -10,6 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using VTQT.Satellite.Service.SatelliteService.DataContext;
+using VTQT.Satellite.Service.SatelliteService.DIUnitOfWork;
+using VTQT.Satellite.Service.SatelliteService.Repository;
 
 namespace VTQT.Satellite.API
 {
@@ -26,6 +29,12 @@ namespace VTQT.Satellite.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddDataContext(Configuration);
+            services.AddRepository();
+            services.AddInfrastructure();
+            services.AddSwaggerGen();
+            services.AddHttpClient();
+            services.AddHttpContextAccessor();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,7 +44,18 @@ namespace VTQT.Satellite.API
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseSwagger();
 
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            });
+            app.UseCors(x => x
+         .AllowAnyOrigin()
+         .AllowAnyMethod()
+         .AllowAnyHeader());
             app.UseHttpsRedirection();
 
             app.UseRouting();
