@@ -23,13 +23,10 @@ namespace VTQT.Satellite.API.Controllers
 
 
         [HttpGet("GetPaginatedList")]
-        public IActionResult GetPaginatedList(int start, int length, [FromQuery(Name = "search[value]")] string page)
+        public IActionResult GetPaginatedList(int start, int length, /*[FromQuery(Name = "search[value]")]*/ string page)
         {
             if (string.IsNullOrEmpty(page))
                 page = "";
-            //[FromQuery(Name = "search[value]")] lấy dữ liệu trên url
-            //   Console.WriteLine(page);
-            //   var list = _dapper.GetAll<Products>("select ProductID, Name, Description, Image, CreateDate, Price, Active from Products where Name like N'%" + page + "%' ORDER BY ProductID OFFSET " + start + " ROWS FETCH NEXT " + length + " ROWS ONLY; ", null, CommandType.Text);
             var list = _unitOfWork.SubscriberRepository.Get(x => x.CustomerName.Contains(page)).Skip(start).Take(length).ToList();
             return Ok(new { data = list, t = true, recordsTotal = list.Count(), recordsFiltered = list.Count() });
         }
@@ -50,24 +47,52 @@ namespace VTQT.Satellite.API.Controllers
         [HttpPut]
         public IActionResult Add(Subscriber SubscriberRepository)
         {
-            if (ModelState.IsValid)
-                return Ok(_unitOfWork.SubscriberRepository.Insert(SubscriberRepository));
-            else
-                return Ok(0);
+            try
+            {
+                if (ModelState.IsValid)
+                    return Ok(_unitOfWork.SubscriberRepository.Insert(SubscriberRepository));
+                else
+                    return Ok(0);
+            }
+            catch (Exception ex)
+            {
+                return Ok(ex.Message);
+            }
+
         }
 
         [HttpDelete("{id}")]
         public IActionResult Delete(string id)
         {
-            return Ok(_unitOfWork.SubscriberRepository.Delete(x => x.Id.Equals(id)));
+            try
+            {
+                if (!string.IsNullOrEmpty(id))
+                    return Ok(_unitOfWork.SubscriberRepository.Delete(x => x.Id.Equals(id)));
+                else
+                    return Ok(0);
+            }
+            catch (Exception ex)
+            {
+                return Ok(ex.Message);
+            }
+
 
         }
 
         [HttpPatch]
         public IActionResult Update(Subscriber SubscriberRepository)
         {
-            return Ok(_unitOfWork.SubscriberRepository.Update(SubscriberRepository));
-
+            try
+            {
+                if (ModelState.IsValid)
+                    return Ok(_unitOfWork.SubscriberRepository.Update(SubscriberRepository));
+                else
+                    return Ok(0);
+            }
+            catch (Exception ex)
+            {
+                return Ok(ex.Message);
+            }
         }
 
 
