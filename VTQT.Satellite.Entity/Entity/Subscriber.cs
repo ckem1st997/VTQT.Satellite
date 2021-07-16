@@ -97,6 +97,10 @@ namespace VTQT.Satellite.Entity.Entity
 
 
     }
+    
+    
+    
+    
     public enum Status
     {
         ACTIVED, SUSPEND,DEACTIVE

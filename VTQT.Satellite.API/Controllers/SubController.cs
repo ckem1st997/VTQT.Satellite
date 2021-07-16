@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using VTQT.Satellite.API.Models;
 using VTQT.Satellite.Entity.Entity;
 using VTQT.Satellite.Service.SatelliteService.DIUnitOfWork;
 
@@ -23,12 +24,24 @@ namespace VTQT.Satellite.API.Controllers
 
 
         [HttpGet("GetPaginatedList")]
-        public IActionResult GetPaginatedList(int start, int length, /*[FromQuery(Name = "search[value]")]*/ string page)
+        public IActionResult GetPaginatedList(int start, int length, [FromQuery(Name = "search[value]")] string page)
         {
             if (string.IsNullOrEmpty(page))
                 page = "";
-            var list = _unitOfWork.SubscriberRepository.Get(x => x.CustomerName.Contains(page)).Skip(start).Take(length).ToList();
-            return Ok(new { data = list, t = true, recordsTotal = list.Count(), recordsFiltered = list.Count() });
+            var list = _unitOfWork.SubscriberRepository.Get(x => x.CustomerName.Contains(page)).Select(x=>new SubscriberViewModel { 
+            Id=x.Id,
+            Status=x.Status,
+            ContractNo=x.ContractNo,
+            CustomerAddress=x.CustomerAddress,
+            CustomerMobile=x.CustomerMobile,
+            CustomerName=x.CustomerName,
+            District=x.District,
+            PaymentCycleRegisted=x.PaymentCycleRegisted,
+            Province=x.Province,          
+            ShipPlateNo=x.ShipPlateNo          
+            });
+            
+            return Ok(new { data = list.Skip(start).Take(length).ToList(), t = true, recordsTotal = list.Count(), recordsFiltered = list.Count() });
         }
 
 
@@ -47,10 +60,20 @@ namespace VTQT.Satellite.API.Controllers
         [HttpPut]
         public IActionResult Add(Subscriber SubscriberRepository)
         {
+            var model = _unitOfWork.SubscriberRepository.GetFirst(x => x.Id.Equals(SubscriberRepository.Id));
+            if ( model== null)
+            {
+                return Ok(0);
+            }
+
             try
             {
                 if (ModelState.IsValid)
+                {
+                    SubscriberRepository.ReferenceId = model.ReferenceId;
+                    SubscriberRepository.LastSync = model.LastSync;
                     return Ok(_unitOfWork.SubscriberRepository.Insert(SubscriberRepository));
+                }
                 else
                     return Ok(0);
             }
